@@ -15,28 +15,36 @@ using namespace std;
 
 struct treeNode{
     int data;
-    int lBound;
-    int uBound;
+    int lBound; // lower bound for subtree
+    int uBound; // upper bound for subtree
     treeNode *left;
     treeNode *right;
 };
 
 typedef treeNode * tNodePtr;
 
-int nodeCount(tNodePtr hdTree);                             // returns number of nodes in binary tree
-int nodesInRange(tNodePtr hdTree, int LB, int UB);          // returns number of nodes with data within a range, in a binary tree
-void insertNode(tNodePtr &hdTree, int data);                // inserts node with data into binary tree
-void updateBounds(tNodePtr hdTree);                         // updates bounds in all nodes
+int nodeCount(tNodePtr hdTree);
+    // returns number of nodes in binary tree
+int nodesInRange(tNodePtr hdTree, int LB, int UB);
+    // returns number of nodes with data within a range, in a binary tree
+void insertNode(tNodePtr &hdTree, int data);
+    // inserts node with data into binary tree
+void updateBounds(tNodePtr hdTree);
+    // updates bounds in all nodes
 void maxDensity(tNodePtr hdTree, tNodePtr &maxP, float &maxD);
-    // provides (by reference) pointer and value of node with highest density
+    // provides (by reference) a pointer to and the value of node with highest density
 
-void printTree(tNodePtr hdTree, bool withBounds = true);    // prints entire binary tree, with bounds
-void printNode(tNodePtr hdTree, bool withBounds = true);    // prints a node, with its bounds
+void printTree(tNodePtr hdTree, bool withBounds = true);
+    // prints entire binary tree, with bounds
+void printNode(tNodePtr hdTree, bool withBounds = true);
+    // prints a node, with its bounds
 
-void deleteTree(tNodePtr hdTree);                           // free up dynamic memory allocated to the binary tree
+void deleteTree(tNodePtr hdTree);
+    // free up dynamic memory allocated to the binary tree
 
 int main(){
-    bool printBounds = true;        // print out bounds with each node?
+    // print out bounds with each node?
+    bool printBounds = true;
 
     tNodePtr hdTree = NULL;
     tNodePtr maxDensity_ptr = NULL;
@@ -46,10 +54,11 @@ int main(){
     int input_nums[4] = {3, 0, 19, -21};
     for(int i=0; i<4; i++)
 		insertNode(hdTree, input_nums[i]);
-    cout << nodeCount(hdTree) << " node(s)" << endl;
+
+    cout << nodeCount(hdTree) << " node(s):" << endl;
     printTree(hdTree, printBounds);
     
-    // maximum denisty node
+    // find maximum density node
     maxDensity(hdTree, maxDensity_ptr, maxDensity_value);
     assert(maxDensity_ptr != NULL);
     cout << "Highest density is " << maxDensity_value << ":" << endl;
@@ -60,6 +69,7 @@ int main(){
     return 0;
 }
 
+// empty tree has 0 nodes
 int nodeCount(tNodePtr hdTree){
     if(hdTree == NULL)
         return 0;
@@ -67,22 +77,27 @@ int nodeCount(tNodePtr hdTree){
     return nodeCount(hdTree->left) + nodeCount(hdTree->right) + 1;
 }
 
+// empty tree has 0 nodes in range
 int nodesInRange(tNodePtr hdTree, int LB, int UB){
     if(hdTree == NULL)
         return 0;
 
     int currNode = 0;
 
-    if(hdTree->lBound >= LB && hdTree->uBound >= UB)    // include current node if its data is within range
+    // include current node if its data is within range
+    if(hdTree->lBound >= LB && hdTree->uBound >= UB)
         currNode = 1;
 
     return nodesInRange(hdTree->left, LB, UB) + nodesInRange(hdTree->right, LB, UB) + currNode;
 }
 
+// insert in ascending order
+// both bounds of a leaf node are its data
 void insertNode(tNodePtr &hdTree, int data){
     if(hdTree == NULL){
         tNodePtr temp;
-        temp = new treeNode;    // has to use 'new', else local variable (treeNode temp) will be gone after function exit
+        temp = new treeNode;
+        // has to use 'new', else local variable (treeNode temp) will be gone after function exit
 
         temp->data = data;
         temp->lBound = data;
@@ -93,12 +108,13 @@ void insertNode(tNodePtr &hdTree, int data){
         hdTree = temp;
     }
     else if(data < hdTree->data){
+        // update bounds for this node if new data exceeds current bounds
         if(data < hdTree->lBound)
-            hdTree->lBound = data;  // update bounds for this node if new data exceeds current bounds
+            hdTree->lBound = data;
 
         insertNode(hdTree->left, data);
     }
-    else{
+    else{ // data >= hdTree->data
         if(data > hdTree->uBound)
             hdTree->uBound = data;
 
@@ -110,18 +126,20 @@ void updateBounds(tNodePtr hdTree){
     if(hdTree != NULL){
         tNodePtr boundP = hdTree;
 
-        // lower bound
+    // search for lower bound
+        // search for node with lowest data in this binary tree
         while(boundP->left != NULL)
-            boundP = boundP->left;          // search for node with lowest data in this binary tree
+            boundP = boundP->left;
 
         if(boundP->data < hdTree->lBound)
             hdTree->lBound = boundP->data;
 
-        // upper bound
+    // search for upper bound now
         boundP = hdTree;
 
+        // search for node with greatest data
         while(boundP->right != NULL)
-            boundP = boundP->right;         // search for node with greatest data
+            boundP = boundP->right;
 
         if(boundP->data > hdTree->uBound)
             hdTree->uBound = boundP->data;
@@ -167,6 +185,7 @@ void printNode(tNodePtr hdTree, bool withBounds){
 
 void deleteTree(tNodePtr hdTree){
     if(hdTree != NULL){
+        // recursing from the bottom to the top
         deleteTree(hdTree->left);
         deleteTree(hdTree->right);
         delete hdTree;
